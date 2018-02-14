@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +13,8 @@ namespace NetCore1.Controllers
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
+        Random r = new Random();
+
         // GET api/values
         [HttpGet]
         public IEnumerable<string> Get()
@@ -20,11 +24,28 @@ namespace NetCore1.Controllers
         }
 
         // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{size}")]
+        public void Get(int size)
         {
-            Console.WriteLine($"Get - {id}");
-            return "value";
+            const int BUF_SIZE = 100;
+            byte[] bytes = new byte[BUF_SIZE];
+            Console.WriteLine($"Get - {size}");
+
+            Response.ContentType = "text/plain";
+            Stream str = Response.Body;
+            StreamWriter sw = new StreamWriter(str);
+            int done = 0;
+            while(done<size)
+            {
+                Console.WriteLine($"Written {done}...");
+                r.NextBytes(bytes);
+                String b64 = Convert.ToBase64String(bytes);
+                sw.WriteLine(b64);
+                str.Flush();
+                done += b64.Length;
+                Thread.Sleep(10);
+            }
+            sw.Close();
         }
 
         // POST api/values
