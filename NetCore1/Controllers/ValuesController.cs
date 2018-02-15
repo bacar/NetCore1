@@ -53,6 +53,9 @@ namespace NetCore1.Controllers
         [RequestSizeLimit(10_000_000_000)]
         public void Post()
         {
+            Console.WriteLine(
+                String.Join("\n", Request.Headers.Select(x => $"{x.Key} = {x.Value}")));
+
             Console.WriteLine($"Post!");
             FileStream fs = new FileStream("/tmp/out", FileMode.Create);
             //Request.Body.CopyTo(fs);

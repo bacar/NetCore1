@@ -9,18 +9,17 @@ namespace ChunkedSender
     {
         static void Main(string[] args)
         {
+
             var wr = WebRequest.Create("http://localhost:5000/api/values") as HttpWebRequest;
 
+            wr.ServicePoint.Expect100Continue = false;
             wr.Method = WebRequestMethods.Http.Post;
             wr.AllowWriteStreamBuffering = false;
-            wr.KeepAlive = true;
+           // wr.KeepAlive = true;
 
-            //wr.SendChunked = true;
+            wr.SendChunked = true;
+
             //wr.ContentType = "application/x-www-form-urlencoded";
-
-
-
-
 
             var wrs = wr.GetRequestStream();
 
@@ -29,7 +28,7 @@ namespace ChunkedSender
 
 
             long j = 0;
-            while (j<1_0)
+            while (j<1_000_000)
             {
                 j+=buffer.Length;
                 r.NextBytes(buffer);
@@ -46,9 +45,14 @@ namespace ChunkedSender
             Console.WriteLine("Press enter!");
             Console.ReadLine();
 
-            wr.GetResponse();
+            var response = wr.GetResponse();
 
-            Console.WriteLine("Bye!");
+            var hdrs = response.Headers;
+
+            for (int i = 0; i < hdrs.Count; ++i)
+            {
+                Console.WriteLine($"\n{hdrs.Keys[i]} = {hdrs[i]}");
+            }
         }
     }
 }
