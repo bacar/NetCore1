@@ -23,8 +23,8 @@ namespace NetCore1
                     {
                         logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                         logging.AddConsole();
-                        logging.AddDebug();
-                        logging.SetMinimumLevel(LogLevel.Trace);
+  //                      logging.AddDebug();
+//                        logging.SetMinimumLevel(LogLevel.Debug);
                     })
                 .UseStartup<Startup>()
                 .Build();

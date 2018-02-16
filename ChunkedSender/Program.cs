@@ -1,34 +1,71 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 
 namespace ChunkedSender
 {
     class Program
     {
+        private const string URL = "http://localhost:5000/api/values";
+        private const int SIZE_TO_SEND = 1_000_000_000;
+
         static void Main(string[] args)
         {
+            impl1();
+        }
 
-            var wr = WebRequest.Create("http://localhost:5000/api/values") as HttpWebRequest;
+        static void impl2()
+        {
+            HttpClient c = new HttpClient();
+            var content = new PushStreamContent((Stream stream, HttpContent cnt, TransportContext txctx) =>
+            {
+                Console.WriteLine(stream.GetType());
+                Random r = new Random();
+                byte[] buffer = new byte[1_000_000];
+                long j = 0;
+                while (j < SIZE_TO_SEND)
+                {
+                    j += buffer.Length;
+                    r.NextBytes(buffer);
+                    stream.Write(buffer, 0, buffer.Length);
+                    stream.Flush();
+                    Console.WriteLine($"Wrote {j} bytes!");
+                    System.Threading.Thread.Sleep(10);
+                }
+                stream.Flush();
+                stream.Close();
+
+            });
+            c.PostAsync(URL, content).Wait();
+        }
+
+
+        static void impl1()
+        {
+            var wr = WebRequest.Create(URL) as HttpWebRequest;
 
             wr.ServicePoint.Expect100Continue = false;
-            wr.Method = WebRequestMethods.Http.Post;
+            wr.Method = WebRequestMethods.Http.Put;
             wr.AllowWriteStreamBuffering = false;
            // wr.KeepAlive = true;
 
             wr.SendChunked = true;
 
+
+
             //wr.ContentType = "application/x-www-form-urlencoded";
 
             var wrs = wr.GetRequestStream();
+            Console.WriteLine(wrs.GetType());
 
             Random r = new Random();
             byte[] buffer = new byte[1_000_000];
 
 
             long j = 0;
-            while (j<1_000_000)
+            while (j< SIZE_TO_SEND)
             {
                 j+=buffer.Length;
                 r.NextBytes(buffer);
