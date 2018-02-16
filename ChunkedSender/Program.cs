@@ -1,57 +1,101 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 
 namespace ChunkedSender
 {
     class Program
     {
+        public static void Log(string message)
+        {
+            Console.WriteLine($"{DateTimeOffset.Now:O}: {message}");
+        }
+
         static void Main(string[] args)
         {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:5000/");
 
-            var wr = WebRequest.Create("http://localhost:5000/api/values") as HttpWebRequest;
-
-            wr.ServicePoint.Expect100Continue = false;
-            wr.Method = WebRequestMethods.Http.Post;
-            wr.AllowWriteStreamBuffering = false;
-           // wr.KeepAlive = true;
-
-            wr.SendChunked = true;
-
-            //wr.ContentType = "application/x-www-form-urlencoded";
-
-            var wrs = wr.GetRequestStream();
-
-            Random r = new Random();
-            byte[] buffer = new byte[1_000_000];
-
-
-            long j = 0;
-            while (j<1_000_000)
+            using (var ms = new MyStream(1_000_000_000))
             {
-                j+=buffer.Length;
-                r.NextBytes(buffer);
-                wrs.Write(buffer, 0, buffer.Length);
-                wrs.Flush();
-                Console.WriteLine($"Wrote {j} bytes!");
-                //System.Threading.Thread.Sleep(10);
+                var content = new StreamContent(ms, 1_000);
+                Log("About to post!");
+                var response = client.PostAsync("/api/values", content).Result;
+                Log("Post complete!");
+
+                Log(response.StatusCode.ToString());
+                Log(response.ReasonPhrase);
+
+                foreach (var header in  response.Headers)
+                {
+                    Log($"'{header.Key}' = '{string.Join(';', header.Value as string[])}'");
+                }
+
+                Console.WriteLine("Press enter!");
+                Console.ReadLine();
+            }
+        }
+
+        public class MyStream
+            : Stream
+        {
+            private readonly Random r = new Random();
+
+            private long sent;
+            public MyStream(long length)
+            {
+                Length = length;
             }
 
-            //fs.CopyTo(wrs);
+            public override bool CanRead => true;
 
-            wrs.Close();
+            public override bool CanSeek => false;
 
-            Console.WriteLine("Press enter!");
-            Console.ReadLine();
+            public override bool CanWrite => false;
 
-            var response = wr.GetResponse();
+            public override long Length { get; }
 
-            var hdrs = response.Headers;
+            public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-            for (int i = 0; i < hdrs.Count; ++i)
+            public override void Flush()
             {
-                Console.WriteLine($"\n{hdrs.Keys[i]} = {hdrs[i]}");
+                throw new NotImplementedException();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                long remain = Length - sent;
+                int toSend = (int)Math.Min(remain, count);
+
+                if (toSend > 0)
+                {
+                    r.NextBytes(buffer);
+                    sent += toSend;
+                    Log($"Sending {toSend} bytes {sent}/{Length}");
+                }
+                else
+                {
+                    Log("Send complete");
+                }
+
+                return toSend;
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
             }
         }
     }

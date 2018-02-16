@@ -51,31 +51,36 @@ namespace NetCore1.Controllers
         // POST api/values
         [HttpPost]
         [RequestSizeLimit(10_000_000_000)]
-        public void Post()
+        public async Task PostAsync()
         {
             Console.WriteLine(
                 String.Join("\n", Request.Headers.Select(x => $"{x.Key} = {x.Value}")));
 
             Console.WriteLine($"Post!");
-            FileStream fs = new FileStream("/tmp/out", FileMode.Create);
-            //Request.Body.CopyTo(fs);
-
-            var ins = Request.Body;
-
-            // artifically slow stream copy
-            byte[] buffer = new byte[3276800];
-            int read;
-            int total = 0;
-            int j = 0;
-            while ((read = ins.Read(buffer, 0, buffer.Length)) > 0)
+            using (var ms = new MemoryStream())
             {
-                ++j;
-                total += read;
-                fs.Write(buffer, 0, read);
-                fs.Flush();
-                Console.WriteLine($"{j:00000} - Wrote {total} bytes!");
+                //FileStream fs = new FileStream("/tmp/out", FileMode.Create);
+                //Request.Body.CopyTo(fs);
+
+                var ins = Request.Body;
+
+                // artifically slow stream copy
+                byte[] buffer = new byte[3276800];
+                int read;
+                int total = 0;
+                int j = 0;
+                while ((read = await ins.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                {
+                    ++j;
+                    total += read;
+                    //fs.Write(buffer, 0, read);
+                    //fs.Flush();
+                    Thread.Sleep(TimeSpan.FromMilliseconds(100));
+                    Console.WriteLine($"{j:00000} - Wrote {total} bytes!");
+                }
+                //fs.Close();
             }
-            fs.Close();
+
             Console.WriteLine($"Post done!");
         }
 
