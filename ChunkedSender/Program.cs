@@ -13,7 +13,37 @@ namespace ChunkedSender
 
         static void Main(string[] args)
         {
-            impl1();
+            impl3();
+        }
+
+        public static void Log(string message)
+        {
+            Console.WriteLine($"{DateTimeOffset.Now:O}: {message}");
+        }
+
+        static void impl3()
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("http://localhost:5000/");
+
+            using (var ms = new RandomByteStream(1_000_000_000))
+            {
+                var content = new StreamContent(ms, 1_000);
+                Log("About to post!");
+                var response = client.PostAsync("/api/values", content).Result;
+                Log("Post complete!");
+
+                Log(response.StatusCode.ToString());
+                Log(response.ReasonPhrase);
+
+                foreach (var header in response.Headers)
+                {
+                    Log($"'{header.Key}' = '{string.Join(';', header.Value as string[])}'");
+                }
+
+                Console.WriteLine("Press enter!");
+                Console.ReadLine();
+            }
         }
 
         static void impl2()
