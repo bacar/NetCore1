@@ -8,6 +8,7 @@ namespace ChunkedSender
         : Stream
     {
         private readonly Random r = new Random();
+        private DateTime lastLogged = DateTime.Now;
 
         private long sent;
         public RandomByteStream(long length)
@@ -45,7 +46,13 @@ namespace ChunkedSender
             {
                 r.NextBytes(buffer);
                 sent += toSend;
-                Log($"Sending {toSend} bytes {sent}/{Length}");
+
+                var now = DateTime.UtcNow;
+                if (now - lastLogged > TimeSpan.FromMilliseconds(500))
+                {
+                    Log($"Sending {toSend} bytes {sent / 1024 / 1024}MiB/{Length / 1024 / 1024}MiB");
+                    lastLogged = now;
+                }
             }
             else
             {

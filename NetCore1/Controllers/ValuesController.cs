@@ -63,34 +63,12 @@ namespace NetCore1.Controllers
 
             var ins = Request.Body;
 
-            // artifically slow stream copy
-            byte[] buffer = new byte[3276800];
-            int read;
-            int total = 0;
-            int j = 0;
-            while ((read = await ins.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            using(var loggingStream = new LoggingStream())
             {
-                ++j;
-                total += read;
-                //fs.Write(buffer, 0, read);
-                //fs.Flush();
-                Console.WriteLine($"{j:00000} - Wrote {total} bytes!");
+                await ins.CopyToAsync(loggingStream);
             }
-            //fs.Close();
+
             Console.WriteLine($"Post done!");
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-            Console.WriteLine("Put");
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

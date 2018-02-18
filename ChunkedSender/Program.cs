@@ -9,7 +9,7 @@ namespace ChunkedSender
     class Program
     {
         private const string URL = "http://localhost:5000/api/values";
-        private const int SIZE_TO_SEND = 1_000_000_000;
+        private const int SIZE_TO_SEND = 1024 * 1024 * 1024;
 
         static void Main(string[] args)
         {
@@ -26,9 +26,9 @@ namespace ChunkedSender
             var client = new HttpClient();
             client.BaseAddress = new Uri("http://localhost:5000/");
 
-            using (var ms = new RandomByteStream(1_000_000_000))
+            using (var ms = new RandomByteStream(SIZE_TO_SEND))
             {
-                var content = new StreamContent(ms, 1_000);
+                var content = new StreamContent(ms);
                 Log("About to post!");
                 var response = client.PostAsync("/api/values", content).Result;
                 Log("Post complete!");
