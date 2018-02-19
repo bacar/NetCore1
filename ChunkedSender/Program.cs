@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace ChunkedSender
+namespace StreamingSender
 {
     class Program
     {
@@ -79,13 +79,8 @@ namespace ChunkedSender
             wr.ServicePoint.Expect100Continue = false;
             wr.Method = WebRequestMethods.Http.Put;
             wr.AllowWriteStreamBuffering = false;
-           // wr.KeepAlive = true;
-
+           
             wr.SendChunked = true;
-
-
-
-            //wr.ContentType = "application/x-www-form-urlencoded";
 
             var wrs = wr.GetRequestStream();
             Console.WriteLine(wrs.GetType());
