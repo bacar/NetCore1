@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCore1", "NetCore1\NetCore1.csproj", "{890B01D1-346F-4D91-A53D-08DB5FCE988E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamingServer", "NetCore1\StreamingServer.csproj", "{890B01D1-346F-4D91-A53D-08DB5FCE988E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StreamingSender", "ChunkedSender\StreamingSender.csproj", "{D38847FB-AFDD-4A98-87A0-08EF3611013A}"
 EndProject

@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace NetCore1.Controllers
+namespace StreamingServer.Controllers
 {
     [Route("api/[controller]")]
     public class ValuesController : Controller

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NetCore1
+namespace StreamingServer
 {
     public class LoggingStream 
         : Stream
